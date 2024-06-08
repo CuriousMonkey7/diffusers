@@ -692,6 +692,11 @@ def main(args):
     unet = UNet2DConditionModel.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
     )
+    from huggingface_hub import hf_hub_download
+    from safetensors.torch import load_file
+    repo = "ByteDance/SDXL-Lightning"
+    ckpt = "sdxl_lightning_8step_unet.safetensors" # Use the correct ckpt for your step setting!
+    unet.load_state_dict(load_file(hf_hub_download(repo, ckpt), device="cuda"))
 
     # Freeze vae and text encoders.
     vae.requires_grad_(False)
@@ -1228,6 +1233,7 @@ def main(args):
                     revision=args.revision,
                     variant=args.variant,
                     torch_dtype=weight_dtype,
+                    low_cpu_mem_usage=True
                 )
                 if args.prediction_type is not None:
                     scheduler_args = {"prediction_type": args.prediction_type}
